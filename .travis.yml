@@ -1,0 +1,20 @@
+sudo: required
+
+language: go
+
+go:
+  - 1.6
+
+services:
+  - docker
+
+before_install:
+  - echo "$(git rev-parse --short HEAD)" >> .tag
+  - docker login -e="." -u=$QUAY_USER -p=$QUAY_TOKEN quay.io
+
+script:
+  - ./build.sh $(cat .tag)
+
+after_success:
+  - docker tag quay.io/weitenghuang/dirigent-cli:$(cat .tag) quay.io/weitenghuang/dirigent-cli:latest
+  - dokcer push quay.io/weitenghuang/dirigent-cli

@@ -1,0 +1,22 @@
+{
+	"ImportPath": "github.com/weitenghuang/dirigent-cli",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/inconshreveable/mousetrap",
+			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+		},
+		{
+			"ImportPath": "github.com/spf13/cobra",
+			"Rev": "a272c3cbd5ff80a5bf5c5603df50183f9f3f7324"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "367864438f1b1a3c7db4da06a2f55b144e6784e0"
+		}
+	]
+}

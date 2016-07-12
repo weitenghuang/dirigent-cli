@@ -1,2 +1,2 @@
 # dirigent-cli
-Commands used by Dirigent
+`dirigent` command line interface 
