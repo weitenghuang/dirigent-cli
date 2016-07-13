@@ -14,7 +14,9 @@ before_install:
 
 script:
   - ./build.sh $(cat .tag)
+  - docker run --name dirigent-cli-build dirigent-cli:$(cat .tag)
 
 after_success:
+  - docker commit dirigent-cli-build quay.io/weitenghuang/dirigent-cli:$(cat .tag)
   - docker tag quay.io/weitenghuang/dirigent-cli:$(cat .tag) quay.io/weitenghuang/dirigent-cli:latest
-  - dokcer push quay.io/weitenghuang/dirigent-cli
+  - docker push quay.io/weitenghuang/dirigent-cli
