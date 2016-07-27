@@ -16,6 +16,7 @@ import (
 
 func DeployPod(appKey string, appValue map[string]interface{}) error {
 	pod := BuildPod(appKey, appValue)
+	log.Infof("%#v\n", pod)
 	podYaml, err := yaml.Marshal(pod)
 	if err != nil {
 		return err
@@ -39,7 +40,7 @@ func DeployPod(appKey string, appValue map[string]interface{}) error {
 
 // BuildPod takes docker-compose's service to build a single "container" pod
 func BuildPod(appKey string, appValue map[string]interface{}) api.Pod {
-	var cVolumes []string
+	var cCommands, cVolumes []string
 	var cPorts []api.ContainerPort
 	var cEnvs []api.EnvVar
 	var cImage string
@@ -62,6 +63,11 @@ func BuildPod(appKey string, appValue map[string]interface{}) api.Pod {
 			cPorts = getContainerPorts(configValues.([]interface{}))
 		} else if configKey == "environment" && reflect.TypeOf(configValues).Kind() == reflect.Map {
 			cEnvs = getEnvVars(configValues.(map[string]interface{}))
+		} else if configKey == "command" {
+			switch configValues.(type) {
+			default:
+				cCommands = strings.Split(configValues.(string), " ")
+			}
 		}
 	}
 	// Build single container
@@ -69,7 +75,7 @@ func BuildPod(appKey string, appValue map[string]interface{}) api.Pod {
 		Name:            strings.Join([]string{appKey, "-container"}, ""),
 		Image:           cImage,
 		ImagePullPolicy: api.PullIfNotPresent,
-		Command:         []string{},
+		Command:         cCommands,
 		Env:             cEnvs,
 		Ports:           cPorts,
 	}
