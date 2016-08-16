@@ -12,7 +12,9 @@ if [ -d /opt/credentials ]; then
   kubectl config set-context $QUOIN_NAME --cluster=$QUOIN_NAME --user=$QUOIN_NAME-admin
   kubectl config use-context $QUOIN_NAME
   popd > /dev/null
-  kubectl cluster-info
+  if [ $1 != "kubectl" ]; then
+    kubectl cluster-info
+  fi
   echo "Connected to cluster"
 fi
 
