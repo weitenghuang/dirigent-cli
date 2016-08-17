@@ -12,7 +12,7 @@ RUN set -x \
 WORKDIR "$GOPATH/src/github.com/weitenghuang/dirigent-cli"
 COPY . "$GOPATH/src/github.com/weitenghuang/dirigent-cli"
 
-RUN godep restore
+# RUN godep restore
 
 ENTRYPOINT ["/go/src/github.com/weitenghuang/dirigent-cli/docker-entrypoint.sh"]
 
