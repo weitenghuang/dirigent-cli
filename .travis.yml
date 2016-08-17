@@ -12,8 +12,10 @@ before_install:
   - echo "$(git rev-parse --short HEAD)" >> .tag
   - docker login -e="." -u=$QUAY_USER -p=$QUAY_TOKEN quay.io
 
-script:
+install:
   - ./build.sh $(cat .tag)
+
+script:
   - docker run --name dirigent-cli-build dirigent-cli:$(cat .tag)
 
 after_success:
