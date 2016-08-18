@@ -10,7 +10,6 @@ services:
 
 before_install:
   - echo "$(git rev-parse --short HEAD)" >> .tag
-  - docker login -e="." -u=$QUAY_USER -p=$QUAY_TOKEN quay.io
 
 install:
   - ./build.sh $(cat .tag)
@@ -21,10 +20,5 @@ script:
 after_success:
   - docker commit dirigent-cli-build quay.io/weitenghuang/dirigent-cli:$(cat .tag)
   - docker tag quay.io/weitenghuang/dirigent-cli:$(cat .tag) quay.io/weitenghuang/dirigent-cli:latest
-
-deploy:
-  provider: script
-  script: scripts/deploy.sh
-  skip_cleanup: true
-  on:
-    branch: master
+  - docker login -e="." -u=$QUAY_USER -p=$QUAY_TOKEN quay.io
+  - ([ "$TRAVIS_BRANCH" == "master" ] && docker push quay.io/weitenghuang/dirigent-cli)
