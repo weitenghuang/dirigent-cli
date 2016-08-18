@@ -1,0 +1,11 @@
+FROM busybox:1.25-glibc
+
+COPY dirigent /bin/dirigent
+COPY kubectl /bin/kubectl
+COPY docker-entrypoint.sh /opt/docker-entrypoint.sh
+
+WORKDIR "/opt"
+
+ENTRYPOINT ["/opt/docker-entrypoint.sh"]
+
+CMD dirigent
