@@ -15,4 +15,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -i -x -o /go/bin/dirigent github.com/weite
 
 ENTRYPOINT ["/go/src/github.com/weitenghuang/dirigent-cli/docker-entrypoint.sh"]
 
- CMD ["tar", "-cf", "-", "-C", "/go/src/github.com/weitenghuang/dirigent-cli", "Dockerfile.install", "-C", "/go/src/github.com/weitenghuang/dirigent-cli", "docker-entrypoint.sh", "-C", "/usr/bin", "kubectl", "-C", "/go/bin", "dirigent"]
+CMD ["tar", "-cf", "-", "-C", "/go/src/github.com/weitenghuang/dirigent-cli", "Dockerfile.install", "-C", "/go/src/github.com/weitenghuang/dirigent-cli", "docker-entrypoint.sh", "-C", "/usr/bin", "kubectl", "-C", "/go/bin", "dirigent"]
