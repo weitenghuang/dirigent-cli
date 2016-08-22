@@ -93,7 +93,6 @@ func getEnvVarsFromCompose(composeEnvs composeYaml.MaporEqualSlice) []api.EnvVar
 func getPortsFromCompose(composePorts []string) []api.ContainerPort {
 	var ports []api.ContainerPort
 	sep := ":"
-	cProtocol := api.ProtocolTCP
 	for _, cValue := range composePorts {
 		var cPort string
 		if strings.Contains(cValue, sep) {
@@ -110,7 +109,7 @@ func getPortsFromCompose(composePorts []string) []api.ContainerPort {
 		ports = append(ports, api.ContainerPort{
 			Name:          strings.Join([]string{"port-", cPort}, ""),
 			ContainerPort: int32(i64Port),
-			Protocol:      cProtocol,
+			Protocol:      api.ProtocolTCP,
 		})
 	}
 	return ports

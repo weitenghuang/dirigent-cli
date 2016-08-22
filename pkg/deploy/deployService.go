@@ -1,8 +1,8 @@
 package deploy
 
 import (
-	// "fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/docker/libcompose/config"
 	"github.com/ghodss/yaml"
 	"github.com/weitenghuang/dirigent-cli/pkg/kubernetes/api"
 	"io/ioutil"
@@ -10,19 +10,19 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 	"os"
 	"os/exec"
-	"reflect"
 	"strconv"
 	"strings"
 )
 
-func DeployService(appKey string, appValue map[string]interface{}) error {
-	service := BuildService(appKey, appValue)
+// func DeployService(appKey string, appValue map[string]interface{}) error {
+func DeployService(appName string, appConfig *config.ServiceConfig) error {
+	service := BuildService(appName, appConfig)
 	log.Infof("%#v\n", service)
 	serviceYaml, err := yaml.Marshal(service)
 	if err != nil {
 		return err
 	}
-	serviceFile := strings.Join([]string{DefaultServiceFile, "-", appKey, YamlExtension}, "")
+	serviceFile := strings.Join([]string{DefaultServiceFile, "-", appName, YamlExtension}, "")
 	if err := ioutil.WriteFile(serviceFile, serviceYaml, 0644); err != nil {
 		return err
 	}
@@ -39,15 +39,10 @@ func DeployService(appKey string, appValue map[string]interface{}) error {
 	return nil
 }
 
-func BuildService(appKey string, appValue map[string]interface{}) api.Service {
-	var servicePorts []api.ServicePort
-	for configKey, configValues := range appValue {
-		if configKey == "ports" && reflect.TypeOf(configValues).Kind() == reflect.Slice {
-			servicePorts = getServicePorts(configValues.([]interface{}))
-		}
-	}
-
-	label := strings.Join([]string{appKey, "-service"}, "")
+// func BuildService(appKey string, appValue map[string]interface{}) api.Service {
+func BuildService(appName string, appConfig *config.ServiceConfig) api.Service {
+	servicePorts := getServicePorts(appConfig.Ports)
+	label := strings.Join([]string{appName, "-service"}, "")
 	return api.Service{
 		TypeMeta: unversioned.TypeMeta{Kind: "Service", APIVersion: DefaultAPIVersion},
 		ObjectMeta: api.ObjectMeta{
@@ -56,7 +51,7 @@ func BuildService(appKey string, appValue map[string]interface{}) api.Service {
 			Labels:    map[string]string{DefaultSelectorKey: label},
 		},
 		Spec: api.ServiceSpec{
-			Selector: map[string]string{DefaultSelectorKey: getPodSelectorLabel(appKey, "latest")},
+			Selector: map[string]string{DefaultSelectorKey: getPodSelectorLabel(appName, "latest")},
 			Type:     api.ServiceTypeClusterIP,
 			Ports:    servicePorts,
 		},
@@ -65,15 +60,15 @@ func BuildService(appKey string, appValue map[string]interface{}) api.Service {
 
 // getServicePorts bind docker-compose container port mapping to Kubernetes service port mapping
 // E.g.: docker-compose has 80:3000 as host=80, container=3000; Kubernetes service will map 80 to "Port", 3000 to "TargetPort"
-func getServicePorts(raw []interface{}) []api.ServicePort {
+func getServicePorts(composePorts []string) []api.ServicePort {
 	var ports []api.ServicePort
+	sep := ":"
 
-	for _, cValue := range raw {
+	for _, cPort := range composePorts {
 		var i32Ports []int32
 		var servicePort int32
 		var targetPort intstr.IntOrString
-		cPort := cValue.(string)
-		portList := strings.Split(cPort, ":") // 80:3000
+		portList := strings.Split(cPort, sep)
 
 		for _, value := range portList {
 			i64Port, err := strconv.ParseInt(value, 10, 32)
@@ -91,13 +86,13 @@ func getServicePorts(raw []interface{}) []api.ServicePort {
 			servicePort = i32Ports[0]
 			targetPort = intstr.IntOrString{Type: intstr.Int, IntVal: i32Ports[0]}
 		} else {
-			log.Errorln("Invalid Port Value From docker-compose File", cValue)
+			log.Errorln("Invalid Port Value From docker-compose File", cPort)
 			continue
 		}
 
 		ports = append(ports, api.ServicePort{
-			Name:       strings.Join([]string{"port-", strings.Replace(cPort, ":", "-", -1)}, ""),
-			Protocol:   "TCP",
+			Name:       strings.Join([]string{"port-", strings.Replace(cPort, sep, "-", -1)}, ""),
+			Protocol:   api.ProtocolTCP,
 			Port:       servicePort,
 			TargetPort: targetPort,
 		})

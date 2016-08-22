@@ -1,8 +1,6 @@
 package deploy
 
 import (
-	// "fmt"
-	"errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/libcompose/docker"
 	"github.com/docker/libcompose/project"
@@ -24,42 +22,27 @@ const (
 
 func Run(filename string) error {
 	composeObject, err := ParseDockerCompose(filename)
-	composeServiceNames := composeObject.ServiceConfigs.Keys()
-	for _, name := range composeServiceNames {
-		if composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name); ok {
-			if err := DeployReplicationController(name, composeServiceConfig); err != nil {
-				log.Errorln("Error: Deploy ReplicationController ", name, composeServiceConfig)
-			}
-		}
-	}
-
-	dockerCompose, err := DocodeDockerComposeYaml(filename)
 	if err != nil {
 		return err
 	}
 
-	dockerServices, ok := dockerCompose["services"]
-	if !ok {
-		return errors.New("Please check if docker-compose.yml includes \"services\".")
-	}
-
-	apps := dockerServices.(map[string]interface{})
-	if len(apps) == 0 {
-		return errors.New("Please check if docker-compose.yml \"services\" section has at least one service.")
-	}
-
-	for appKey, rawValue := range apps {
-		appValue := rawValue.(map[string]interface{})
-		// log.Infoln("Pod Deployment Starts: ", appKey)
-		// if err := DeployPod(appKey, appValue); err != nil {
-		// 	log.Errorln("Error: Deploy Pod ", err, appKey, appValue)
-		// }
-		log.Infoln("Service Deployment Starts: ", appKey)
-		if err := DeployService(appKey, appValue); err != nil {
-			log.Errorln("Error: Deploy Service ", err, appKey, appValue)
+	composeServiceNames := composeObject.ServiceConfigs.Keys()
+	for _, name := range composeServiceNames {
+		if composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name); ok {
+			log.Infoln("Replication Controller Deployment Starts: ", name)
+			if err := DeployReplicationController(name, composeServiceConfig); err != nil {
+				log.Errorln("Error: Deploy ReplicationController ", err, name, composeServiceConfig)
+				return err
+			}
+			log.Infoln("Service Deployment Starts: ", name)
+			if err := DeployService(name, composeServiceConfig); err != nil {
+				log.Errorln("Error: Deploy Service ", err, name, composeServiceConfig)
+				return err
+			}
+			log.Infoln("Deployment Done: ", name)
 		}
-		log.Infoln("Deployment Done: ", appKey)
 	}
+
 	return nil
 }
 
