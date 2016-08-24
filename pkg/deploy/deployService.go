@@ -15,7 +15,7 @@ import (
 )
 
 // func DeployService(appKey string, appValue map[string]interface{}) error {
-func DeployService(appName string, appConfig *config.ServiceConfig) error {
+func Service(appName string, appConfig *config.ServiceConfig) error {
 	service := BuildService(appName, appConfig)
 	log.Infof("%#v\n", service)
 	serviceYaml, err := yaml.Marshal(service)
