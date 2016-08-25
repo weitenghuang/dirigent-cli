@@ -31,7 +31,7 @@ func ReplicationController(appName string, appConfig *config.ServiceConfig) (str
 func BuildReplicationController(appName string, appConfig *config.ServiceConfig) api.ReplicationController {
 	rcLabel := getRCSelectorLabel(appName, "latest")
 	podLabel := getPodSelectorLabel(appName, "latest")
-
+	volumeLabel := strings.Join([]string{appName, "-storage"}, "")
 	// Build single container
 	appContainer := api.Container{
 		Name:            strings.Join([]string{appName, "-container"}, ""),
@@ -41,7 +41,24 @@ func BuildReplicationController(appName string, appConfig *config.ServiceConfig)
 		Env:             getEnvVarsFromCompose(appConfig.Environment),
 		Ports:           getPortsFromCompose(appConfig.Ports),
 	}
+	var podVolumes []api.Volume
+	if appConfig.Volumes != nil && len(appConfig.Volumes.Volumes) > 0 {
+		appContainer.VolumeMounts = []api.VolumeMount{
+			api.VolumeMount{
+				Name:      volumeLabel,
+				MountPath: appConfig.Volumes.Volumes[0].Destination,
+			},
+		}
 
+		podVolumes = []api.Volume{
+			api.Volume{
+				Name: volumeLabel,
+				VolumeSource: api.VolumeSource{
+					EmptyDir: &api.EmptyDirVolumeSource{Medium: ""},
+				},
+			},
+		}
+	}
 	podTemplateSpec := &api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Name:      podLabel,
@@ -50,6 +67,7 @@ func BuildReplicationController(appName string, appConfig *config.ServiceConfig)
 		},
 		Spec: api.PodSpec{
 			Containers: []api.Container{appContainer},
+			Volumes:    podVolumes,
 		},
 	}
 
