@@ -3,7 +3,6 @@ package deploy
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/weitenghuang/dirigent-cli/pkg/utils"
-	"strings"
 )
 
 const (
@@ -40,8 +39,4 @@ func Run(filename string) error {
 	}
 
 	return nil
-}
-
-func getPodSelectorLabel(appName string, version string) string {
-	return strings.Join([]string{appName, "-", version, "-pod"}, "")
 }

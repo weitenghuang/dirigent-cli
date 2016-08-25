@@ -23,6 +23,12 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 					log.Errorln("Error: ReplicationController File ", err, name, composeServiceConfig)
 					return err
 				}
+			case resource.Service:
+				log.Infoln("Service File Creation Starts: ", name)
+				if _, err := Service(name, composeServiceConfig); err != nil {
+					log.Errorln("Error: Service File ", err, name, composeServiceConfig)
+					return err
+				}
 			}
 		}
 	}

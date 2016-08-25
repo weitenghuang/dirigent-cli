@@ -15,12 +15,12 @@ import (
 
 func ReplicationController(appName string, appConfig *config.ServiceConfig) (string, error) {
 	rc := BuildReplicationController(appName, appConfig)
-	log.Infof("compose service %v config: %#v\n", appName, rc)
+	log.Infof("compose service %v config to RC: %#v\n", appName, rc)
 	rcYaml, err := yaml.Marshal(rc)
 	if err != nil {
 		return "", err
 	}
-	rcFile := strings.Join([]string{resource.DefaultDeployPath, string(resource.ReplicationController), "-", appName, resource.YamlExtension}, "")
+	rcFile := resource.DefaultReplicationControllerFilePath(appName)
 	if err := ioutil.WriteFile(rcFile, rcYaml, 0644); err != nil {
 		return "", err
 	}

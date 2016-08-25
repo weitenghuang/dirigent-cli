@@ -1,5 +1,9 @@
 package resource
 
+import (
+	"strings"
+)
+
 const (
 	YamlExtension       string = ".yml"
 	DefaultDeployPath   string = "/opt/deploy/"
@@ -14,3 +18,11 @@ const (
 	ReplicationController ResourceType = "rc"
 	Service               ResourceType = "service"
 )
+
+func DefaultReplicationControllerFilePath(appName string) string {
+	return strings.Join([]string{DefaultDeployPath, string(ReplicationController), "-", appName, YamlExtension}, "")
+}
+
+func DefaultServiceFilePath(appName string) string {
+	return strings.Join([]string{DefaultDeployPath, string(Service), "-", appName, YamlExtension}, "")
+}
