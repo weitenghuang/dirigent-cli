@@ -2,36 +2,17 @@ package utils
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/docker/libcompose/config"
 	"github.com/docker/libcompose/docker"
+	"github.com/docker/libcompose/lookup"
 	"github.com/docker/libcompose/project"
-	"io/ioutil"
+	"path/filepath"
+	// "io/ioutil"
 	"os"
 	"runtime/debug"
 )
 
 func ParseDockerCompose(filePath string) (composeObject *project.Project, err error) {
-	content, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	sanitizedCompose := []byte(os.ExpandEnv(string(content)))
-	tmpfile, err := ioutil.TempFile("/tmp", "sanitized-")
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove(tmpfile.Name())
-
-	if _, err := tmpfile.Write(sanitizedCompose); err != nil {
-		log.Fatal(err)
-	}
-	if err := tmpfile.Close(); err != nil {
-		log.Fatal(err)
-	}
-
-	return libcomposeParser(tmpfile.Name())
-}
-
-func libcomposeParser(filePath string) (composeObject *project.Project, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Infof("Recovered in pkg/utils/utils.go libcomposeParser(filePath string) %#v\n", r)
@@ -44,6 +25,20 @@ func libcomposeParser(filePath string) (composeObject *project.Project, err erro
 		filePath = "docker-compose.yml"
 	}
 	context.ComposeFiles = []string{filePath}
+	if context.Context.EnvironmentLookup == nil {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		context.EnvironmentLookup = &lookup.ComposableEnvLookup{
+			Lookups: []config.EnvironmentLookup{
+				&lookup.EnvfileLookup{
+					Path: filepath.Join(cwd, ".env"),
+				},
+				&lookup.OsEnvLookup{},
+			},
+		}
+	}
 	composeObject = project.NewProject(&context.Context, nil, nil)
 	err = composeObject.Parse()
 	if err != nil {
