@@ -3,7 +3,6 @@ package utils
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/libcompose/config"
-	"github.com/docker/libcompose/docker"
 	"github.com/docker/libcompose/lookup"
 	"github.com/docker/libcompose/project"
 	"path/filepath"
@@ -20,12 +19,12 @@ func ParseDockerCompose(filePath string) (composeObject *project.Project, err er
 			err = r.(error)
 		}
 	}()
-	context := &docker.Context{}
+	context := &project.Context{}
 	if filePath == "" {
 		filePath = "docker-compose.yml"
 	}
 	context.ComposeFiles = []string{filePath}
-	if context.Context.EnvironmentLookup == nil {
+	if context.EnvironmentLookup == nil {
 		cwd, err := os.Getwd()
 		if err != nil {
 			return nil, err
@@ -39,7 +38,7 @@ func ParseDockerCompose(filePath string) (composeObject *project.Project, err er
 			},
 		}
 	}
-	composeObject = project.NewProject(&context.Context, nil, nil)
+	composeObject = project.NewProject(context, nil, nil)
 	err = composeObject.Parse()
 	if err != nil {
 		log.Fatalf("Failed to load compose file", err)
