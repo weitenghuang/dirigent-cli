@@ -24,14 +24,14 @@ func Run(filename string) error {
 	composeServiceNames := composeObject.ServiceConfigs.Keys()
 	for _, name := range composeServiceNames {
 		if composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name); ok {
-			log.Infoln("Replication Controller Deployment Starts: ", name)
-			if err := ReplicationController(name, composeServiceConfig); err != nil {
-				log.Errorln("Error: Deploy ReplicationController ", err, name, composeServiceConfig)
-				return err
-			}
 			log.Infoln("Service Deployment Starts: ", name)
 			if err := Service(name, composeServiceConfig); err != nil {
 				log.Errorln("Error: Deploy Service ", err, name, composeServiceConfig)
+				return err
+			}
+			log.Infoln("Replication Controller Deployment Starts: ", name)
+			if err := ReplicationController(name, composeServiceConfig); err != nil {
+				log.Errorln("Error: Deploy ReplicationController ", err, name, composeServiceConfig)
 				return err
 			}
 			log.Infoln("Deployment Done: ", name)

@@ -5,9 +5,8 @@ import (
 	"github.com/docker/libcompose/config"
 	"github.com/docker/libcompose/lookup"
 	"github.com/docker/libcompose/project"
-	"path/filepath"
-	// "io/ioutil"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 )
 

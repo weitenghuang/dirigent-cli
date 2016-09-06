@@ -31,6 +31,10 @@ var createCmd = &cobra.Command{
 				err = create.ResourceFile(resource.ReplicationController, DefaultComposeYamlPath)
 			case "service":
 				err = create.ResourceFile(resource.Service, DefaultComposeYamlPath)
+			case "job":
+				err = create.ResourceFile(resource.Job, DefaultComposeYamlPath)
+			case "deployment":
+				err = create.ResourceFile(resource.Deployment, DefaultComposeYamlPath)
 			default:
 				log.Warnf("Invalid resource type: %v", resourceType)
 				cmd.Help()

@@ -29,8 +29,8 @@ func ReplicationController(appName string, appConfig *config.ServiceConfig) (str
 }
 
 func BuildReplicationController(appName string, appConfig *config.ServiceConfig) api.ReplicationController {
-	rcLabel := getRCSelectorLabel(appName, "latest")
-	podLabel := getPodSelectorLabel(appName, "latest")
+	rcLabel := resource.DefaultRCLabel(appName, "latest")
+	podLabel := resource.DefaultPodLabel(appName, "latest")
 	volumeLabel := strings.Join([]string{appName, "-storage"}, "")
 	// Build single container
 	appContainer := api.Container{

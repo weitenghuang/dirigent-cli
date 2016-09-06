@@ -15,7 +15,9 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 
 	composeServiceNames := composeObject.ServiceConfigs.Keys()
 	for _, name := range composeServiceNames {
-		if composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name); ok {
+		composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name)
+		notJob := notJobReource(name)
+		if ok && notJob { // Regular resources
 			switch resourceType {
 			case resource.ReplicationController:
 				log.Infoln("Replication Controller File Creation Starts: ", name)
@@ -30,16 +32,14 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 					return err
 				}
 			}
+		} else if ok && resourceType == resource.Job && !notJob { // Special Resource
+			log.Infof("%v\n", resourceType)
 		}
 	}
 
 	return nil
 }
 
-func getPodSelectorLabel(appName string, version string) string {
-	return strings.Join([]string{appName, "-", version, "-pod"}, "")
-}
-
-func getRCSelectorLabel(appName string, version string) string {
-	return strings.Join([]string{appName, "-", version, "-rc"}, "")
+func notJobReource(appName string) bool {
+	return !strings.Contains(appName, "-job") && !strings.Contains(appName, "-init")
 }

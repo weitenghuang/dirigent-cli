@@ -27,7 +27,6 @@ func Service(appName string, appConfig *config.ServiceConfig) (string, error) {
 	return serviceFile, nil
 }
 
-// func BuildService(appKey string, appValue map[string]interface{}) api.Service {
 func BuildService(appName string, appConfig *config.ServiceConfig) api.Service {
 	servicePorts := getServicePorts(appConfig.Ports)
 	label := strings.Join([]string{appName, "-service"}, "")
@@ -39,7 +38,7 @@ func BuildService(appName string, appConfig *config.ServiceConfig) api.Service {
 			Labels:    map[string]string{resource.DefaultSelectorKey: label},
 		},
 		Spec: api.ServiceSpec{
-			Selector: map[string]string{resource.DefaultSelectorKey: getPodSelectorLabel(appName, "latest")},
+			Selector: map[string]string{resource.DefaultSelectorKey: resource.DefaultPodLabel(appName, "latest")},
 			Type:     api.ServiceTypeClusterIP,
 			Ports:    servicePorts,
 		},
