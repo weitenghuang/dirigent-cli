@@ -20,7 +20,7 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 	composeServiceNames := composeObject.ServiceConfigs.Keys()
 	for _, name := range composeServiceNames {
 		composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name)
-		notJob := notJobReource(name)
+		notJob := utils.NotJobResource(name)
 		if ok && notJob { // Regular resources
 			switch resourceType {
 			case resource.ReplicationController:
@@ -48,10 +48,6 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 	}
 
 	return nil
-}
-
-func notJobReource(appName string) bool {
-	return !strings.Contains(appName, "-job") && !strings.Contains(appName, "-init")
 }
 
 func getEnvVarsFromCompose(composeEnvs composeYaml.MaporEqualSlice) []api.EnvVar {

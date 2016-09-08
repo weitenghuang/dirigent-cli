@@ -6,12 +6,17 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/weitenghuang/dirigent-cli/pkg/kubernetes/api"
 	"github.com/weitenghuang/dirigent-cli/pkg/resource"
+	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"strings"
 )
 
 func Service(appName string, appConfig *config.ServiceConfig) (string, error) {
+	if stop, err := utils.StopJobResourceWithError(appName); stop && err != nil {
+		return "", err
+	}
+
 	service := BuildService(appName, appConfig)
 	log.Infof("compose service %v config to service: %#v\n", appName, service)
 	serviceYaml, err := yaml.Marshal(service)

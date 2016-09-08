@@ -3,12 +3,17 @@ package deploy
 import (
 	"github.com/docker/libcompose/config"
 	"github.com/weitenghuang/dirigent-cli/pkg/create"
+	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 	"os"
 	"os/exec"
 )
 
 // func DeployService(appKey string, appValue map[string]interface{}) error {
 func Service(appName string, appConfig *config.ServiceConfig) error {
+	if stop, err := utils.StopJobResourceWithError(appName); stop && err != nil {
+		return err
+	}
+
 	serviceFile, err := create.Service(appName, appConfig)
 	if err != nil {
 		return err

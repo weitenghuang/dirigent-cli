@@ -23,18 +23,22 @@ func Run(filename string) error {
 
 	composeServiceNames := composeObject.ServiceConfigs.Keys()
 	for _, name := range composeServiceNames {
-		if composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name); ok {
+		composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name)
+		notJob := utils.NotJobResource(name)
+		if ok && notJob {
 			log.Infoln("Service Deployment Starts: ", name)
 			if err := Service(name, composeServiceConfig); err != nil {
 				log.Errorln("Error: Deploy Service ", err, name, composeServiceConfig)
 				return err
 			}
-			log.Infoln("Replication Controller Deployment Starts: ", name)
-			if err := ReplicationController(name, composeServiceConfig); err != nil {
-				log.Errorln("Error: Deploy ReplicationController ", err, name, composeServiceConfig)
+			log.Infoln("Deployment Resource Starts: ", name)
+			if err := Deployment(name, composeServiceConfig); err != nil {
+				log.Errorln("Error: Deploy Kubernetes Deployment ", err, name, composeServiceConfig)
 				return err
 			}
-			log.Infoln("Deployment Done: ", name)
+			log.Infoln("Deployment Ends: ", name)
+		} else if ok && !notJob {
+			log.Infof("%v is a job resource.\n ", name)
 		}
 	}
 

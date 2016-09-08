@@ -7,12 +7,17 @@ import (
 	"github.com/weitenghuang/dirigent-cli/pkg/kubernetes/api"
 	"github.com/weitenghuang/dirigent-cli/pkg/kubernetes/apis/extensions"
 	"github.com/weitenghuang/dirigent-cli/pkg/resource"
+	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"strings"
 )
 
 func Deployment(appName string, appConfig *config.ServiceConfig) (string, error) {
+	if stop, err := utils.StopJobResourceWithError(appName); stop && err != nil {
+		return "", err
+	}
+
 	deployment := BuildDeployment(appName, appConfig)
 	log.Infof("compose service %v config to Deployment: %#v\n", appName, deployment)
 	deploymentYaml, err := yaml.Marshal(deployment)
