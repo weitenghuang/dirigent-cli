@@ -78,7 +78,7 @@ func BuildDeployment(appName string, appConfig *config.ServiceConfig) extensions
 	log.Infof("RC Pod %v Template: %#v\n", podLabel, podTemplateSpec)
 
 	return extensions.Deployment{
-		TypeMeta: unversioned.TypeMeta{Kind: "Deployment", APIVersion: "extensions"},
+		TypeMeta: unversioned.TypeMeta{Kind: "Deployment", APIVersion: "extensions/v1beta1"},
 		ObjectMeta: api.ObjectMeta{
 			Name:      deploymentLabel,
 			Namespace: resource.DefaultK8sNamespace,
