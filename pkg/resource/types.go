@@ -54,6 +54,10 @@ func DefaultJobLabel(appName string, version string) string {
 	return defaultLabel(appName, version, Job)
 }
 
+func DefaultDeploymentLabel(appName string, version string) string {
+	return defaultLabel(appName, version, Deployment)
+}
+
 func defaultLabel(name string, version string, resourceType ResourceType) string {
 	return strings.Join([]string{name, "-", version, "-", string(resourceType)}, "")
 }

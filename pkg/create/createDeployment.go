@@ -5,29 +5,30 @@ import (
 	"github.com/docker/libcompose/config"
 	"github.com/ghodss/yaml"
 	"github.com/weitenghuang/dirigent-cli/pkg/kubernetes/api"
+	"github.com/weitenghuang/dirigent-cli/pkg/kubernetes/apis/extensions"
 	"github.com/weitenghuang/dirigent-cli/pkg/resource"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"strings"
 )
 
-func ReplicationController(appName string, appConfig *config.ServiceConfig) (string, error) {
-	rc := BuildReplicationController(appName, appConfig)
-	log.Infof("compose service %v config to RC: %#v\n", appName, rc)
-	rcYaml, err := yaml.Marshal(rc)
+func Deployment(appName string, appConfig *config.ServiceConfig) (string, error) {
+	deployment := BuildDeployment(appName, appConfig)
+	log.Infof("compose service %v config to Deployment: %#v\n", appName, deployment)
+	deploymentYaml, err := yaml.Marshal(deployment)
 	if err != nil {
 		return "", err
 	}
-	rcFile := resource.DefaultReplicationControllerFilePath(appName)
-	if err := ioutil.WriteFile(rcFile, rcYaml, 0644); err != nil {
+	deploymentFile := resource.DefaultDeploymentFilePath(appName)
+	if err := ioutil.WriteFile(deploymentFile, deploymentYaml, 0644); err != nil {
 		return "", err
 	}
 
-	return rcFile, nil
+	return deploymentFile, nil
 }
 
-func BuildReplicationController(appName string, appConfig *config.ServiceConfig) api.ReplicationController {
-	rcLabel := resource.DefaultRCLabel(appName, "latest")
+func BuildDeployment(appName string, appConfig *config.ServiceConfig) extensions.Deployment {
+	deploymentLabel := resource.DefaultDeploymentLabel(appName, "latest")
 	podLabel := resource.DefaultPodLabel(appName, "latest")
 	volumeLabel := strings.Join([]string{appName, "-storage"}, "")
 	// Build single container
@@ -57,7 +58,7 @@ func BuildReplicationController(appName string, appConfig *config.ServiceConfig)
 			},
 		}
 	}
-	podTemplateSpec := &api.PodTemplateSpec{
+	podTemplateSpec := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Name:      podLabel,
 			Namespace: resource.DefaultK8sNamespace,
@@ -69,17 +70,19 @@ func BuildReplicationController(appName string, appConfig *config.ServiceConfig)
 		},
 	}
 
-	log.Infof("RC Pod %v Template: %#v\n", podLabel, *podTemplateSpec)
+	log.Infof("RC Pod %v Template: %#v\n", podLabel, podTemplateSpec)
 
-	return api.ReplicationController{
-		TypeMeta: unversioned.TypeMeta{Kind: "ReplicationController", APIVersion: resource.DefaultAPIVersion},
+	return extensions.Deployment{
+		TypeMeta: unversioned.TypeMeta{Kind: "Deployment", APIVersion: "extensions"},
 		ObjectMeta: api.ObjectMeta{
-			Name:      rcLabel,
+			Name:      deploymentLabel,
 			Namespace: resource.DefaultK8sNamespace,
-			Labels:    map[string]string{resource.DefaultSelectorKey: rcLabel},
+			Labels:    map[string]string{resource.DefaultSelectorKey: deploymentLabel},
 		},
-		Spec: api.ReplicationControllerSpec{
-			Selector: map[string]string{resource.DefaultSelectorKey: podLabel},
+		Spec: extensions.DeploymentSpec{
+			Selector: &unversioned.LabelSelector{
+				MatchLabels: map[string]string{resource.DefaultSelectorKey: podLabel},
+			},
 			Replicas: int32(1),
 			Template: podTemplateSpec,
 		},
