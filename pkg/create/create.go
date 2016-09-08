@@ -2,6 +2,7 @@ package create
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/docker/libcompose/config"
 	composeYaml "github.com/docker/libcompose/yaml"
 	"github.com/weitenghuang/dirigent-cli/pkg/kubernetes/api"
 	"github.com/weitenghuang/dirigent-cli/pkg/resource"
@@ -125,4 +126,53 @@ func getServicePorts(composePorts []string) []api.ServicePort {
 		})
 	}
 	return ports
+}
+
+func buildContainer(appName string, appConfig *config.ServiceConfig) api.Container {
+	return api.Container{
+		Name:            strings.Join([]string{appName, "-container"}, ""),
+		Image:           appConfig.Image,
+		ImagePullPolicy: api.PullIfNotPresent,
+		Command:         []string(appConfig.Command),
+		Env:             getEnvVarsFromCompose(appConfig.Environment),
+		Ports:           getPortsFromCompose(appConfig.Ports),
+	}
+}
+
+func buildPodTemplateSpec(appName string, appContainer *api.Container, podVolumes []api.Volume) api.PodTemplateSpec {
+	podLabel := resource.DefaultPodLabel(appName, "latest")
+
+	return api.PodTemplateSpec{
+		ObjectMeta: api.ObjectMeta{
+			Name:      podLabel,
+			Namespace: resource.DefaultK8sNamespace,
+			Labels:    map[string]string{resource.DefaultSelectorKey: podLabel},
+		},
+		Spec: api.PodSpec{
+			Containers: []api.Container{*appContainer},
+			Volumes:    podVolumes,
+		},
+	}
+}
+
+func attachVolumeToContainer(appName string, appConfig *config.ServiceConfig, appContainer *api.Container) []api.Volume {
+	volumeLabel := strings.Join([]string{appName, "-storage"}, "")
+	if appConfig.Volumes != nil && len(appConfig.Volumes.Volumes) > 0 {
+		appContainer.VolumeMounts = []api.VolumeMount{
+			api.VolumeMount{
+				Name:      volumeLabel,
+				MountPath: appConfig.Volumes.Volumes[0].Destination,
+			},
+		}
+
+		return []api.Volume{
+			api.Volume{
+				Name: volumeLabel,
+				VolumeSource: api.VolumeSource{
+					EmptyDir: &api.EmptyDirVolumeSource{Medium: ""},
+				},
+			},
+		}
+	}
+	return []api.Volume{}
 }
