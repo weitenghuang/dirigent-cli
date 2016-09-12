@@ -5,7 +5,6 @@ import (
 	"github.com/weitenghuang/dirigent-cli/pkg/create"
 	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 	"os"
-	"os/exec"
 )
 
 // func DeployService(appKey string, appValue map[string]interface{}) error {
@@ -20,7 +19,7 @@ func Service(appName string, appConfig *config.ServiceConfig) error {
 	}
 
 	// Start deployment process
-	kubectlCreateCmd := exec.Command("kubectl", "create", "-f", serviceFile)
+	kubectlCreateCmd := utils.KubectlCreateCmd(serviceFile)
 	kubectlCreateCmd.Stdout = os.Stdout
 	kubectlCreateCmd.Stderr = os.Stderr
 	if err := kubectlCreateCmd.Start(); err != nil {

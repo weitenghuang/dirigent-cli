@@ -5,7 +5,6 @@ import (
 	"github.com/weitenghuang/dirigent-cli/pkg/create"
 	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 	"os"
-	"os/exec"
 )
 
 func ReplicationController(appName string, appConfig *config.ServiceConfig) error {
@@ -18,7 +17,7 @@ func ReplicationController(appName string, appConfig *config.ServiceConfig) erro
 		return err
 	}
 	// Start deployment process
-	kubectlCreateCmd := exec.Command("kubectl", "create", "-f", rcFile)
+	kubectlCreateCmd := utils.KubectlCreateCmd(rcFile)
 	kubectlCreateCmd.Stdout = os.Stdout
 	kubectlCreateCmd.Stderr = os.Stderr
 	if err := kubectlCreateCmd.Start(); err != nil {

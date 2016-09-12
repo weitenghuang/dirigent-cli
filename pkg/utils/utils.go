@@ -7,6 +7,7 @@ import (
 	"github.com/docker/libcompose/lookup"
 	"github.com/docker/libcompose/project"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime/debug"
 	"strings"
@@ -58,4 +59,8 @@ func StopJobResourceWithError(appName string) (stop bool, err error) {
 		return true, fmt.Errorf("%#v should be a \"job\" resource.", appName)
 	}
 	return false, nil
+}
+
+func KubectlCreateCmd(filepath string) *exec.Cmd {
+	return exec.Command("kubectl", "create", "--validate", "-f", filepath)
 }

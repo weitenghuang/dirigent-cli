@@ -21,30 +21,51 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 	composeServiceNames := composeObject.ServiceConfigs.Keys()
 	for _, name := range composeServiceNames {
 		composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name)
-		notJob := utils.NotJobResource(name)
-		if ok && notJob { // Regular resources
+		if ok {
+			skipJob := !utils.NotJobResource(name)
 			switch resourceType {
 			case resource.ReplicationController:
+				if skipJob {
+					continue
+				}
 				log.Infoln("Replication Controller File Creation Starts: ", name)
 				if _, err := ReplicationController(name, composeServiceConfig); err != nil {
 					log.Errorln("Error: ReplicationController File ", err, name, composeServiceConfig)
 					return err
 				}
 			case resource.Service:
+				if skipJob {
+					continue
+				}
 				log.Infoln("Service File Creation Starts: ", name)
 				if _, err := Service(name, composeServiceConfig); err != nil {
 					log.Errorln("Error: Service File ", err, name, composeServiceConfig)
 					return err
 				}
 			case resource.Deployment:
+				if skipJob {
+					continue
+				}
 				log.Infoln("Deployment File Creation Starts: ", name)
 				if _, err := Deployment(name, composeServiceConfig); err != nil {
 					log.Errorln("Error: Service File ", err, name, composeServiceConfig)
 					return err
 				}
+			case resource.Job:
+				if skipJob {
+					log.Infoln("Job File Creation Starts: ", name)
+					log.Infof("Creating %v\n", resourceType)
+					// if _, err := Deployment(name, composeServiceConfig); err != nil {
+					// 	log.Errorln("Error: Service File ", err, name, composeServiceConfig)
+					// 	return err
+					// }
+				}
+
+			default:
+				log.Infof("Resource type for %v is currently not supported yet.\n", name)
 			}
-		} else if ok && resourceType == resource.Job && !notJob { // Special Resource
-			log.Infof("%v\n", resourceType)
+		} else {
+			log.Errorf("Invalid Compose Service Config found in %v\n", name)
 		}
 	}
 

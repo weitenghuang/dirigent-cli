@@ -5,7 +5,6 @@ import (
 	"github.com/weitenghuang/dirigent-cli/pkg/create"
 	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 	"os"
-	"os/exec"
 )
 
 func Deployment(appName string, appConfig *config.ServiceConfig) error {
@@ -18,7 +17,7 @@ func Deployment(appName string, appConfig *config.ServiceConfig) error {
 		return err
 	}
 	// Start deployment process
-	kubectlCreateCmd := exec.Command("kubectl", "create", "-f", deploymentFile)
+	kubectlCreateCmd := utils.KubectlCreateCmd(deploymentFile)
 	kubectlCreateCmd.Stdout = os.Stdout
 	kubectlCreateCmd.Stderr = os.Stderr
 	if err := kubectlCreateCmd.Start(); err != nil {
