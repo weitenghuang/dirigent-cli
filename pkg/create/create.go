@@ -52,15 +52,13 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 					return err
 				}
 			case resource.Job:
-				if skipJob {
+				if !skipJob {
 					log.Infoln("Job File Creation Starts: ", name)
-					log.Infof("Creating %v\n", resourceType)
-					// if _, err := Deployment(name, composeServiceConfig); err != nil {
-					// 	log.Errorln("Error: Service File ", err, name, composeServiceConfig)
-					// 	return err
-					// }
+					if _, err := Job(name, composeServiceConfig); err != nil {
+						log.Errorln("Error: Service File ", err, name, composeServiceConfig)
+						return err
+					}
 				}
-
 			default:
 				log.Infof("Resource type for %v is currently not supported yet.\n", name)
 			}
