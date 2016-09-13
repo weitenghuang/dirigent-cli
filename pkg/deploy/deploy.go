@@ -2,6 +2,7 @@ package deploy
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/weitenghuang/dirigent-cli/pkg/resource"
 	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 )
 
@@ -24,8 +25,12 @@ func Run(filename string) error {
 	composeServiceNames := composeObject.ServiceConfigs.Keys()
 	for _, name := range composeServiceNames {
 		composeServiceConfig, ok := composeObject.ServiceConfigs.Get(name)
-		notJob := utils.NotJobResource(name)
-		if ok && notJob {
+		notJob := resource.NotJobResource(name)
+		if !ok {
+			log.Debugf("Unable to Find %v's Compose Service Config\n", name)
+			continue
+		}
+		if notJob {
 			log.Infoln("Service Deployment Starts: ", name)
 			if err := Service(name, composeServiceConfig); err != nil {
 				log.Errorln("Error: Deploy Service ", err, name, composeServiceConfig)
@@ -36,9 +41,12 @@ func Run(filename string) error {
 				log.Errorln("Error: Deploy Kubernetes Deployment ", err, name, composeServiceConfig)
 				return err
 			}
-			log.Infoln("Deployment Ends: ", name)
-		} else if ok && !notJob {
-			log.Infof("%v is a job resource.\n ", name)
+		} else {
+			log.Infoln("Job Resource Starts: ", name)
+			if err := Job(name, composeServiceConfig); err != nil {
+				log.Errorln("Error: Deploy Kubernetes Job ", err, name, composeServiceConfig)
+				return err
+			}
 		}
 	}
 

@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -60,4 +61,20 @@ func DefaultDeploymentLabel(appName string, version string) string {
 
 func defaultLabel(name string, version string, resourceType ResourceType) string {
 	return strings.Join([]string{name, "-", version, "-", string(resourceType)}, "")
+}
+
+func DefaultActiveDeadlineSeconds() *int64 {
+	activeDeadlineSeconds := int64(300) // 300 seconds
+	return &activeDeadlineSeconds
+}
+
+func NotJobResource(appName string) bool {
+	return !strings.Contains(appName, "-job") && !strings.Contains(appName, "-init")
+}
+
+func StopJobResourceWithError(appName string) (stop bool, err error) {
+	if notJob := NotJobResource(appName); !notJob {
+		return true, fmt.Errorf("%#v should be a \"job\" resource.", appName)
+	}
+	return false, nil
 }

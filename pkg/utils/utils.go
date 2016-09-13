@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/libcompose/config"
 	"github.com/docker/libcompose/lookup"
@@ -10,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime/debug"
-	"strings"
 )
 
 func ParseDockerCompose(filePath string) (composeObject *project.Project, err error) {
@@ -48,17 +46,6 @@ func ParseDockerCompose(filePath string) (composeObject *project.Project, err er
 	}
 	log.Infof("Post-parsing: %#v\n", composeObject)
 	return composeObject, nil
-}
-
-func NotJobResource(appName string) bool {
-	return !strings.Contains(appName, "-job") && !strings.Contains(appName, "-init")
-}
-
-func StopJobResourceWithError(appName string) (stop bool, err error) {
-	if notJob := NotJobResource(appName); !notJob {
-		return true, fmt.Errorf("%#v should be a \"job\" resource.", appName)
-	}
-	return false, nil
 }
 
 func KubectlCreateCmd(filepath string) *exec.Cmd {

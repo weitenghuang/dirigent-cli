@@ -28,7 +28,6 @@ func Job(appName string, appConfig *config.ServiceConfig) (string, error) {
 
 func BuildJob(appName string, appConfig *config.ServiceConfig) batch.Job {
 	jobLabel := resource.DefaultJobLabel(appName, "latest")
-	podLabel := resource.DefaultPodLabel(appName, "latest")
 	// Build single container
 	appContainer := buildContainer(appName, appConfig)
 	podVolumes := attachVolumeToContainer(appName, appConfig, &appContainer)
@@ -45,10 +44,8 @@ func BuildJob(appName string, appConfig *config.ServiceConfig) batch.Job {
 			Labels:    map[string]string{resource.DefaultSelectorKey: jobLabel},
 		},
 		Spec: batch.JobSpec{
-			Selector: &unversioned.LabelSelector{
-				MatchLabels: map[string]string{resource.DefaultSelectorKey: podLabel},
-			},
-			Template: podTemplateSpec,
+			ActiveDeadlineSeconds: resource.DefaultActiveDeadlineSeconds(),
+			Template:              podTemplateSpec,
 		},
 	}
 }
