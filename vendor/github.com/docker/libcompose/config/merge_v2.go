@@ -32,6 +32,12 @@ func MergeServicesV2(existingServices *ServiceConfigs, environmentLookup Environ
 		}
 	}
 
+	if options.Validate {
+		if err := validateV2(datas); err != nil {
+			return nil, err
+		}
+	}
+
 	for name, data := range datas {
 		data, err := parseV2(resourceLookup, environmentLookup, file, data, datas, options)
 		if err != nil {
@@ -86,6 +92,12 @@ func ParseNetworks(bytes []byte) (map[string]*NetworkConfig, error) {
 
 	if err := utils.Convert(config.Networks, &networkConfigs); err != nil {
 		return nil, err
+	}
+
+	for key, value := range networkConfigs {
+		if value == nil {
+			networkConfigs[key] = &NetworkConfig{}
+		}
 	}
 
 	return networkConfigs, nil
@@ -145,6 +157,12 @@ func parseV2(resourceLookup ResourceLookup, environmentLookup EnvironmentLookup,
 		if options.Interpolate {
 			err = Interpolate(environmentLookup, &baseRawServices)
 			if err != nil {
+				return nil, err
+			}
+		}
+
+		if options.Validate {
+			if err := validate(baseRawServices); err != nil {
 				return nil, err
 			}
 		}
