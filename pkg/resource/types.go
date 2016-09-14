@@ -23,6 +23,21 @@ const (
 	Service               ResourceType = "service"
 )
 
+type EnvVar string
+
+const (
+	BaseFqdn EnvVar = "BASE_FQDN"
+)
+
+const (
+	DefaultFqdn     string = "com.default"
+	DefaultReplicas int32  = 1
+)
+
+type ClusterConfig struct {
+	Replicas int32
+}
+
 func DefaultJobFilePath(appName string) string {
 	return defaultFilePath(appName, Job)
 }

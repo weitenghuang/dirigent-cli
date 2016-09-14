@@ -36,9 +36,11 @@ func BuildReplicationController(appName string, appConfig *config.ServiceConfig)
 	appContainer := buildContainer(appName, appConfig)
 	podVolumes := attachVolumeToContainer(appName, appConfig, &appContainer)
 	podTemplateSpec := buildPodTemplateSpec(appName, &appContainer, podVolumes)
-
 	log.Infof("RC Pod %v Template: %#v\n", podLabel, podTemplateSpec)
-
+	clusterConfig := &resource.ClusterConfig{
+		Replicas: resource.DefaultReplicas,
+	}
+	bindClusterConfigFromCompose(appName, appConfig, clusterConfig)
 	return api.ReplicationController{
 		TypeMeta: unversioned.TypeMeta{Kind: "ReplicationController", APIVersion: resource.DefaultAPIVersion},
 		ObjectMeta: api.ObjectMeta{
@@ -48,7 +50,7 @@ func BuildReplicationController(appName string, appConfig *config.ServiceConfig)
 		},
 		Spec: api.ReplicationControllerSpec{
 			Selector: map[string]string{resource.DefaultSelectorKey: podLabel},
-			Replicas: int32(1),
+			Replicas: clusterConfig.Replicas,
 			Template: &podTemplateSpec,
 		},
 	}

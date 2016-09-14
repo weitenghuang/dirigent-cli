@@ -37,9 +37,11 @@ func BuildDeployment(appName string, appConfig *config.ServiceConfig) extensions
 	appContainer := buildContainer(appName, appConfig)
 	podVolumes := attachVolumeToContainer(appName, appConfig, &appContainer)
 	podTemplateSpec := buildPodTemplateSpec(appName, &appContainer, podVolumes)
-
 	log.Infof("Deployment Pod %v Template: %#v\n", resource.DefaultPodLabel(appName, "latest"), podTemplateSpec)
-
+	clusterConfig := &resource.ClusterConfig{
+		Replicas: resource.DefaultReplicas,
+	}
+	bindClusterConfigFromCompose(appName, appConfig, clusterConfig)
 	return extensions.Deployment{
 		TypeMeta: unversioned.TypeMeta{Kind: "Deployment", APIVersion: "extensions/v1beta1"},
 		ObjectMeta: api.ObjectMeta{
@@ -51,7 +53,7 @@ func BuildDeployment(appName string, appConfig *config.ServiceConfig) extensions
 			Selector: &unversioned.LabelSelector{
 				MatchLabels: map[string]string{resource.DefaultSelectorKey: podLabel},
 			},
-			Replicas: int32(1),
+			Replicas: clusterConfig.Replicas,
 			Template: podTemplateSpec,
 		},
 	}

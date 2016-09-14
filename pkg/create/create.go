@@ -1,6 +1,7 @@
 package create
 
 import (
+	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/libcompose/config"
 	composeYaml "github.com/docker/libcompose/yaml"
@@ -8,6 +9,7 @@ import (
 	"github.com/weitenghuang/dirigent-cli/pkg/resource"
 	"github.com/weitenghuang/dirigent-cli/pkg/utils"
 	"k8s.io/kubernetes/pkg/util/intstr"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -190,4 +192,29 @@ func attachVolumeToContainer(appName string, appConfig *config.ServiceConfig, ap
 		}
 	}
 	return []api.Volume{}
+}
+
+// Bind docker-compose service label to resource.ClusterConfig
+// Sample docker-compose
+// ```yaml
+// api:
+//		labels:
+//			com.company-name.app-name.service-name.cluster: "{\"replicas\": 3}"
+// ```
+func bindClusterConfigFromCompose(appName string, appConfig *config.ServiceConfig, clusterConfig *resource.ClusterConfig) error {
+	baseFqdn := os.Getenv(string(resource.BaseFqdn))
+	if len(baseFqdn) == 0 {
+		baseFqdn = resource.DefaultFqdn
+	}
+	key := strings.Join([]string{baseFqdn, appName, "cluster"}, ".")
+	configJson, ok := appConfig.Labels[key]
+	if ok {
+		if err := json.Unmarshal([]byte(configJson), clusterConfig); err != nil {
+			return err
+		}
+		return nil
+	} else {
+		log.Infof("%v doesn't have cluster config label %v\n", appName, key)
+	}
+	return nil
 }
