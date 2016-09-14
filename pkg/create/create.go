@@ -25,37 +25,33 @@ func ResourceFile(resourceType resource.ResourceType, composeFile string) error 
 			log.Debugf("Unable to Find %v's Compose Service Config\n", name)
 			continue
 		}
-		skipJob := !resource.NotJobResource(name)
 		switch resourceType {
 		case resource.ReplicationController:
-			if skipJob {
-				continue
-			}
-			log.Infoln("Replication Controller File Creation Starts: ", name)
-			if _, err := ReplicationController(name, composeServiceConfig); err != nil {
-				log.Errorln("Error: ReplicationController File ", err, name, composeServiceConfig)
-				return err
+			if resource.NotJobResource(name) {
+				log.Infoln("Replication Controller File Creation Starts: ", name)
+				if _, err := ReplicationController(name, composeServiceConfig); err != nil {
+					log.Errorln("Error: ReplicationController File ", err, name, composeServiceConfig)
+					return err
+				}
 			}
 		case resource.Service:
-			if skipJob {
-				continue
-			}
-			log.Infoln("Service File Creation Starts: ", name)
-			if _, err := Service(name, composeServiceConfig); err != nil {
-				log.Errorln("Error: Service File ", err, name, composeServiceConfig)
-				return err
+			if resource.NotJobResource(name) {
+				log.Infoln("Service File Creation Starts: ", name)
+				if _, err := Service(name, composeServiceConfig); err != nil {
+					log.Errorln("Error: Service File ", err, name, composeServiceConfig)
+					return err
+				}
 			}
 		case resource.Deployment:
-			if skipJob {
-				continue
-			}
-			log.Infoln("Deployment File Creation Starts: ", name)
-			if _, err := Deployment(name, composeServiceConfig); err != nil {
-				log.Errorln("Error: Service File ", err, name, composeServiceConfig)
-				return err
+			if resource.NotJobResource(name) {
+				log.Infoln("Deployment File Creation Starts: ", name)
+				if _, err := Deployment(name, composeServiceConfig); err != nil {
+					log.Errorln("Error: Service File ", err, name, composeServiceConfig)
+					return err
+				}
 			}
 		case resource.Job:
-			if !skipJob {
+			if !resource.NotJobResource(name) {
 				log.Infoln("Job File Creation Starts: ", name)
 				if _, err := Job(name, composeServiceConfig); err != nil {
 					log.Errorln("Error: Service File ", err, name, composeServiceConfig)
