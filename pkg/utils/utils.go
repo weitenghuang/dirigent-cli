@@ -2,12 +2,8 @@ package utils
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/docker/libcompose/config"
-	"github.com/docker/libcompose/lookup"
 	"github.com/docker/libcompose/project"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime/debug"
 )
 
@@ -24,20 +20,6 @@ func ParseDockerCompose(filePath string) (composeObject *project.Project, err er
 		filePath = "docker-compose.yml"
 	}
 	context.ComposeFiles = []string{filePath}
-	if context.EnvironmentLookup == nil {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return nil, err
-		}
-		context.EnvironmentLookup = &lookup.ComposableEnvLookup{
-			Lookups: []config.EnvironmentLookup{
-				&lookup.EnvfileLookup{
-					Path: filepath.Join(cwd, ".env"),
-				},
-				&lookup.OsEnvLookup{},
-			},
-		}
-	}
 	composeObject = project.NewProject(context, nil, nil)
 	err = composeObject.Parse()
 	if err != nil {
