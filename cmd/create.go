@@ -31,7 +31,7 @@ var createCmd = &cobra.Command{
 				if err != nil {
 					log.Errorln(err)
 				}
-			case "service":
+			case "service", "svc", "SVC":
 				err := create.ResourceFile(resource.Service, DefaultComposeYamlPath)
 				if err != nil {
 					log.Errorln(err)
